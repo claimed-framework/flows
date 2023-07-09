@@ -16,12 +16,12 @@ metadata:
       COS buckets (unidirectional)", "inputs": [{"name": "source_cos_path", "type":
       "String"}, {"name": "source_access_key_id", "type": "String"}, {"name": "source_secret_access_key",
       "type": "String"}, {"name": "source_endpoint", "type": "String"}, {"name": "source_bucket_name",
-      "type": "String"}, {"name": "target_cos_path", "type": "String"}, {"name": "target_access_key_id",
-      "type": "String"}, {"name": "target_secret_access_key", "type": "String"}, {"name":
-      "target_endpoint", "type": "String"}, {"name": "target_bucket_name", "type":
-      "String"}, {"default": "/data/", "name": "buffer_dir", "optional": true, "type":
-      "String"}, {"default": "/data/", "name": "pvc_mount_path", "optional": true,
-      "type": "String"}, {"default": "kfp-data-pvc-z", "name": "pvc_name", "optional":
+      "type": "String"}, {"name": "target_local_path", "type": "String"}, {"name":
+      "target_access_key_id", "type": "String"}, {"name": "target_secret_access_key",
+      "type": "String"}, {"name": "target_endpoint", "type": "String"}, {"name": "target_bucket_name",
+      "type": "String"}, {"default": "/data/", "name": "buffer_dir", "optional": true,
+      "type": "String"}, {"default": "/data/", "name": "pvc_mount_path", "optional":
+      true, "type": "String"}, {"default": "kfp-data-pvc-z", "name": "pvc_name", "optional":
       true, "type": "String"}], "name": "cos-sync"}'
   labels:
     pipelines.kubeflow.org/pipelinename: ''
@@ -48,9 +48,9 @@ spec:
     value: ''
   - name: target_bucket_name
     value: ''
-  - name: target_cos_path
-    value: ''
   - name: target_endpoint
+    value: ''
+  - name: target_local_path
     value: ''
   - name: target_secret_access_key
     value: ''
@@ -69,8 +69,8 @@ spec:
     - name: source_secret_access_key
     - name: target_access_key_id
     - name: target_bucket_name
-    - name: target_cos_path
     - name: target_endpoint
+    - name: target_local_path
     - name: target_secret_access_key
     tasks:
     - name: util-cos
@@ -141,16 +141,16 @@ spec:
         value: $(params.pvc_mount_path)
       - name: pvc_name
         value: $(params.pvc_name)
-      - name: source_access_key_id
-        value: $(params.source_access_key_id)
-      - name: source_bucket_name
-        value: $(params.source_bucket_name)
-      - name: source_cos_path
-        value: $(params.source_cos_path)
-      - name: source_endpoint
-        value: $(params.source_endpoint)
-      - name: source_secret_access_key
-        value: $(params.source_secret_access_key)
+      - name: target_access_key_id
+        value: $(params.target_access_key_id)
+      - name: target_bucket_name
+        value: $(params.target_bucket_name)
+      - name: target_endpoint
+        value: $(params.target_endpoint)
+      - name: target_local_path
+        value: $(params.target_local_path)
+      - name: target_secret_access_key
+        value: $(params.target_secret_access_key)
       taskSpec:
         steps:
         - name: main
@@ -160,12 +160,12 @@ spec:
           - "ipython ./util-cos.ipynb access_key_id=\"$0\" secret_access_key=\"$1\"\
             \ endpoint=\"$2\" bucket_name=\"$3\" path=\"$4\" source=\"$5\" target=\"\
             $6\" recursive=\"$7\" operation=\"$8\" log_level=\"$9\" \n"
-          - $(inputs.params.source_access_key_id)
-          - $(inputs.params.source_secret_access_key)
-          - $(inputs.params.source_endpoint)
-          - $(inputs.params.source_bucket_name)
-          - $(inputs.params.source_cos_path)
+          - $(inputs.params.target_access_key_id)
+          - $(inputs.params.target_secret_access_key)
+          - $(inputs.params.target_endpoint)
+          - $(inputs.params.target_bucket_name)
           - ''
+          - $(inputs.params.target_local_path)
           - $(inputs.params.buffer_dir)
           - "True"
           - sync_to_cos
@@ -178,11 +178,11 @@ spec:
         - name: buffer_dir
         - name: pvc_mount_path
         - name: pvc_name
-        - name: source_access_key_id
-        - name: source_bucket_name
-        - name: source_cos_path
-        - name: source_endpoint
-        - name: source_secret_access_key
+        - name: target_access_key_id
+        - name: target_bucket_name
+        - name: target_endpoint
+        - name: target_local_path
+        - name: target_secret_access_key
         volumes:
         - name: pvolume-e819e39f92a888af338a32082ea85feaa488e4a0aabfacc858d718b
           persistentVolumeClaim:

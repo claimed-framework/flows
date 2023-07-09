@@ -2,17 +2,17 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: cos-sync-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.22, pipelines.kubeflow.org/pipeline_compilation_time: '2023-07-09T16:29:06.219091',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.22, pipelines.kubeflow.org/pipeline_compilation_time: '2023-07-09T21:33:28.023315',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "syncs two S3 compliant
       COS buckets (unidirectional)", "inputs": [{"name": "source_cos_path", "type":
       "String"}, {"name": "source_access_key_id", "type": "String"}, {"name": "source_secret_access_key",
       "type": "String"}, {"name": "source_endpoint", "type": "String"}, {"name": "source_bucket_name",
-      "type": "String"}, {"name": "target_cos_path", "type": "String"}, {"name": "target_access_key_id",
-      "type": "String"}, {"name": "target_secret_access_key", "type": "String"}, {"name":
-      "target_endpoint", "type": "String"}, {"name": "target_bucket_name", "type":
-      "String"}, {"default": "/data/", "name": "buffer_dir", "optional": true, "type":
-      "String"}, {"default": "/data/", "name": "pvc_mount_path", "optional": true,
-      "type": "String"}, {"default": "kfp-data-pvc-z", "name": "pvc_name", "optional":
+      "type": "String"}, {"name": "target_local_path", "type": "String"}, {"name":
+      "target_access_key_id", "type": "String"}, {"name": "target_secret_access_key",
+      "type": "String"}, {"name": "target_endpoint", "type": "String"}, {"name": "target_bucket_name",
+      "type": "String"}, {"default": "/data/", "name": "buffer_dir", "optional": true,
+      "type": "String"}, {"default": "/data/", "name": "pvc_mount_path", "optional":
+      true, "type": "String"}, {"default": "kfp-data-pvc-z", "name": "pvc_name", "optional":
       true, "type": "String"}], "name": "cos-sync"}'}
   labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.22}
 spec:
@@ -29,6 +29,11 @@ spec:
       - {name: source_cos_path}
       - {name: source_endpoint}
       - {name: source_secret_access_key}
+      - {name: target_access_key_id}
+      - {name: target_bucket_name}
+      - {name: target_endpoint}
+      - {name: target_local_path}
+      - {name: target_secret_access_key}
     dag:
       tasks:
       - name: util-cos
@@ -51,11 +56,11 @@ spec:
           - {name: buffer_dir, value: '{{inputs.parameters.buffer_dir}}'}
           - {name: pvc_mount_path, value: '{{inputs.parameters.pvc_mount_path}}'}
           - {name: pvc_name, value: '{{inputs.parameters.pvc_name}}'}
-          - {name: source_access_key_id, value: '{{inputs.parameters.source_access_key_id}}'}
-          - {name: source_bucket_name, value: '{{inputs.parameters.source_bucket_name}}'}
-          - {name: source_cos_path, value: '{{inputs.parameters.source_cos_path}}'}
-          - {name: source_endpoint, value: '{{inputs.parameters.source_endpoint}}'}
-          - {name: source_secret_access_key, value: '{{inputs.parameters.source_secret_access_key}}'}
+          - {name: target_access_key_id, value: '{{inputs.parameters.target_access_key_id}}'}
+          - {name: target_bucket_name, value: '{{inputs.parameters.target_bucket_name}}'}
+          - {name: target_endpoint, value: '{{inputs.parameters.target_endpoint}}'}
+          - {name: target_local_path, value: '{{inputs.parameters.target_local_path}}'}
+          - {name: target_secret_access_key, value: '{{inputs.parameters.target_secret_access_key}}'}
   - name: util-cos
     container:
       args: []
@@ -134,12 +139,12 @@ spec:
       - "ipython ./util-cos.ipynb access_key_id=\"$0\" secret_access_key=\"$1\" endpoint=\"\
         $2\" bucket_name=\"$3\" path=\"$4\" source=\"$5\" target=\"$6\" recursive=\"\
         $7\" operation=\"$8\" log_level=\"$9\" \n"
-      - '{{inputs.parameters.source_access_key_id}}'
-      - '{{inputs.parameters.source_secret_access_key}}'
-      - '{{inputs.parameters.source_endpoint}}'
-      - '{{inputs.parameters.source_bucket_name}}'
-      - '{{inputs.parameters.source_cos_path}}'
+      - '{{inputs.parameters.target_access_key_id}}'
+      - '{{inputs.parameters.target_secret_access_key}}'
+      - '{{inputs.parameters.target_endpoint}}'
+      - '{{inputs.parameters.target_bucket_name}}'
       - ''
+      - '{{inputs.parameters.target_local_path}}'
       - '{{inputs.parameters.buffer_dir}}'
       - "True"
       - sync_to_cos
@@ -152,11 +157,11 @@ spec:
       - {name: buffer_dir}
       - {name: pvc_mount_path}
       - {name: pvc_name}
-      - {name: source_access_key_id}
-      - {name: source_bucket_name}
-      - {name: source_cos_path}
-      - {name: source_endpoint}
-      - {name: source_secret_access_key}
+      - {name: target_access_key_id}
+      - {name: target_bucket_name}
+      - {name: target_endpoint}
+      - {name: target_local_path}
+      - {name: target_secret_access_key}
     metadata:
       labels:
         pipelines.kubeflow.org/kfp_sdk_version: 1.8.22
@@ -186,11 +191,11 @@ spec:
           level", "name": "log_level", "type": "String"}], "name": "util-cos"}', pipelines.kubeflow.org/component_ref: '{"digest":
           "f5b6dbd627c7815692d59472862963954175196edc559a4c0f2980751d6a4db3", "url":
           "/home/romeokienzler/gitco/component-library/component-library/util/util-cos.yaml"}',
-        pipelines.kubeflow.org/arguments.parameters: '{"access_key_id": "{{inputs.parameters.source_access_key_id}}",
-          "bucket_name": "{{inputs.parameters.source_bucket_name}}", "endpoint": "{{inputs.parameters.source_endpoint}}",
-          "log_level": "INFO", "operation": "sync_to_cos", "path": "{{inputs.parameters.source_cos_path}}",
-          "recursive": "True", "secret_access_key": "{{inputs.parameters.source_secret_access_key}}",
-          "source": "", "target": "{{inputs.parameters.buffer_dir}}"}'}
+        pipelines.kubeflow.org/arguments.parameters: '{"access_key_id": "{{inputs.parameters.target_access_key_id}}",
+          "bucket_name": "{{inputs.parameters.target_bucket_name}}", "endpoint": "{{inputs.parameters.target_endpoint}}",
+          "log_level": "INFO", "operation": "sync_to_cos", "path": "", "recursive":
+          "True", "secret_access_key": "{{inputs.parameters.target_secret_access_key}}",
+          "source": "{{inputs.parameters.target_local_path}}", "target": "{{inputs.parameters.buffer_dir}}"}'}
     volumes:
     - name: pvolume-e819e39f92a888af338a32082ea85feaa488e4a0aabfacc858d718b
       persistentVolumeClaim: {claimName: '{{inputs.parameters.pvc_name}}'}
@@ -201,7 +206,7 @@ spec:
     - {name: source_secret_access_key}
     - {name: source_endpoint}
     - {name: source_bucket_name}
-    - {name: target_cos_path}
+    - {name: target_local_path}
     - {name: target_access_key_id}
     - {name: target_secret_access_key}
     - {name: target_endpoint}
