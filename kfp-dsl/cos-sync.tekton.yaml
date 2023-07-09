@@ -1,0 +1,197 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: cos-sync
+  annotations:
+    tekton.dev/output_artifacts: '{}'
+    tekton.dev/input_artifacts: '{}'
+    tekton.dev/artifact_bucket: mlpipeline
+    tekton.dev/artifact_endpoint: minio-service.kubeflow:9000
+    tekton.dev/artifact_endpoint_scheme: http://
+    tekton.dev/artifact_items: '{"util-cos": [], "util-cos-2": []}'
+    sidecar.istio.io/inject: "false"
+    tekton.dev/template: ''
+    pipelines.kubeflow.org/big_data_passing_format: $(workspaces.$TASK_NAME.path)/artifacts/$ORIG_PR_NAME/$TASKRUN_NAME/$TASK_PARAM_NAME
+    pipelines.kubeflow.org/pipeline_spec: '{"description": "syncs two S3 compliant
+      COS buckets (unidirectional)", "inputs": [{"name": "source_cos_path", "type":
+      "String"}, {"name": "source_access_key_id", "type": "String"}, {"name": "source_secret_access_key",
+      "type": "String"}, {"name": "source_endpoint", "type": "String"}, {"name": "source_bucket_name",
+      "type": "String"}, {"name": "target_cos_path", "type": "String"}, {"name": "target_access_key_id",
+      "type": "String"}, {"name": "target_secret_access_key", "type": "String"}, {"name":
+      "target_endpoint", "type": "String"}, {"name": "target_bucket_name", "type":
+      "String"}, {"default": "/data/", "name": "buffer_dir", "optional": true, "type":
+      "String"}, {"default": "/data/", "name": "pvc_mount_path", "optional": true,
+      "type": "String"}, {"default": "kfp-data-pvc-z", "name": "pvc_name", "optional":
+      true, "type": "String"}], "name": "cos-sync"}'
+  labels:
+    pipelines.kubeflow.org/pipelinename: ''
+    pipelines.kubeflow.org/generation: ''
+spec:
+  params:
+  - name: buffer_dir
+    value: /data/
+  - name: pvc_mount_path
+    value: /data/
+  - name: pvc_name
+    value: kfp-data-pvc-z
+  - name: source_access_key_id
+    value: ''
+  - name: source_bucket_name
+    value: ''
+  - name: source_cos_path
+    value: ''
+  - name: source_endpoint
+    value: ''
+  - name: source_secret_access_key
+    value: ''
+  - name: target_access_key_id
+    value: ''
+  - name: target_bucket_name
+    value: ''
+  - name: target_cos_path
+    value: ''
+  - name: target_endpoint
+    value: ''
+  - name: target_secret_access_key
+    value: ''
+  pipelineSpec:
+    params:
+    - name: buffer_dir
+      default: /data/
+    - name: pvc_mount_path
+      default: /data/
+    - name: pvc_name
+      default: kfp-data-pvc-z
+    - name: source_access_key_id
+    - name: source_bucket_name
+    - name: source_cos_path
+    - name: source_endpoint
+    - name: source_secret_access_key
+    - name: target_access_key_id
+    - name: target_bucket_name
+    - name: target_cos_path
+    - name: target_endpoint
+    - name: target_secret_access_key
+    tasks:
+    - name: util-cos
+      params:
+      - name: buffer_dir
+        value: $(params.buffer_dir)
+      - name: pvc_mount_path
+        value: $(params.pvc_mount_path)
+      - name: pvc_name
+        value: $(params.pvc_name)
+      - name: source_access_key_id
+        value: $(params.source_access_key_id)
+      - name: source_bucket_name
+        value: $(params.source_bucket_name)
+      - name: source_cos_path
+        value: $(params.source_cos_path)
+      - name: source_endpoint
+        value: $(params.source_endpoint)
+      - name: source_secret_access_key
+        value: $(params.source_secret_access_key)
+      taskSpec:
+        steps:
+        - name: main
+          command:
+          - sh
+          - -ec
+          - "ipython ./util-cos.ipynb access_key_id=\"$0\" secret_access_key=\"$1\"\
+            \ endpoint=\"$2\" bucket_name=\"$3\" path=\"$4\" source=\"$5\" target=\"\
+            $6\" recursive=\"$7\" operation=\"$8\" log_level=\"$9\" \n"
+          - $(inputs.params.source_access_key_id)
+          - $(inputs.params.source_secret_access_key)
+          - $(inputs.params.source_endpoint)
+          - $(inputs.params.source_bucket_name)
+          - $(inputs.params.source_cos_path)
+          - ''
+          - $(inputs.params.buffer_dir)
+          - "True"
+          - sync_to_local
+          - INFO
+          image: romeokienzler/claimed-util-cos:0.29
+          volumeMounts:
+          - mountPath: $(inputs.params.pvc_mount_path)
+            name: pvolume-e819e39f92a888af338a32082ea85feaa488e4a0aabfacc858d718b
+        params:
+        - name: buffer_dir
+        - name: pvc_mount_path
+        - name: pvc_name
+        - name: source_access_key_id
+        - name: source_bucket_name
+        - name: source_cos_path
+        - name: source_endpoint
+        - name: source_secret_access_key
+        volumes:
+        - name: pvolume-e819e39f92a888af338a32082ea85feaa488e4a0aabfacc858d718b
+          persistentVolumeClaim:
+            claimName: $(inputs.params.pvc_name)
+        metadata:
+          labels:
+            pipelines.kubeflow.org/cache_enabled: "true"
+          annotations:
+            pipelines.kubeflow.org/component_spec_digest: '{"name": "util-cos", "outputs":
+              [], "version": "util-cos@sha256=1b53969128037e202d1f004c1cfa588cc34edf40bf5da6b2829cb8b0f6bee69c"}'
+    - name: util-cos-2
+      params:
+      - name: buffer_dir
+        value: $(params.buffer_dir)
+      - name: pvc_mount_path
+        value: $(params.pvc_mount_path)
+      - name: pvc_name
+        value: $(params.pvc_name)
+      - name: source_access_key_id
+        value: $(params.source_access_key_id)
+      - name: source_bucket_name
+        value: $(params.source_bucket_name)
+      - name: source_cos_path
+        value: $(params.source_cos_path)
+      - name: source_endpoint
+        value: $(params.source_endpoint)
+      - name: source_secret_access_key
+        value: $(params.source_secret_access_key)
+      taskSpec:
+        steps:
+        - name: main
+          command:
+          - sh
+          - -ec
+          - "ipython ./util-cos.ipynb access_key_id=\"$0\" secret_access_key=\"$1\"\
+            \ endpoint=\"$2\" bucket_name=\"$3\" path=\"$4\" source=\"$5\" target=\"\
+            $6\" recursive=\"$7\" operation=\"$8\" log_level=\"$9\" \n"
+          - $(inputs.params.source_access_key_id)
+          - $(inputs.params.source_secret_access_key)
+          - $(inputs.params.source_endpoint)
+          - $(inputs.params.source_bucket_name)
+          - $(inputs.params.source_cos_path)
+          - ''
+          - $(inputs.params.buffer_dir)
+          - "True"
+          - sync_to_local
+          - INFO
+          image: romeokienzler/claimed-util-cos:0.29
+          volumeMounts:
+          - mountPath: $(inputs.params.pvc_mount_path)
+            name: pvolume-e819e39f92a888af338a32082ea85feaa488e4a0aabfacc858d718b
+        params:
+        - name: buffer_dir
+        - name: pvc_mount_path
+        - name: pvc_name
+        - name: source_access_key_id
+        - name: source_bucket_name
+        - name: source_cos_path
+        - name: source_endpoint
+        - name: source_secret_access_key
+        volumes:
+        - name: pvolume-e819e39f92a888af338a32082ea85feaa488e4a0aabfacc858d718b
+          persistentVolumeClaim:
+            claimName: $(inputs.params.pvc_name)
+        metadata:
+          labels:
+            pipelines.kubeflow.org/cache_enabled: "true"
+          annotations:
+            pipelines.kubeflow.org/component_spec_digest: '{"name": "util-cos", "outputs":
+              [], "version": "util-cos@sha256=1b53969128037e202d1f004c1cfa588cc34edf40bf5da6b2829cb8b0f6bee69c"}'
+      runAfter:
+      - util-cos
