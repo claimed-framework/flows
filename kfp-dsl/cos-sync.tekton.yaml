@@ -168,7 +168,7 @@ spec:
           - ''
           - $(inputs.params.buffer_dir)
           - "True"
-          - sync_to_local
+          - sync_to_cos
           - INFO
           image: romeokienzler/claimed-util-cos:0.29
           volumeMounts:

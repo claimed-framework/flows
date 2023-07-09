@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: cos-sync-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.22, pipelines.kubeflow.org/pipeline_compilation_time: '2023-07-09T16:18:28.496769',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.22, pipelines.kubeflow.org/pipeline_compilation_time: '2023-07-09T16:29:06.219091',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "syncs two S3 compliant
       COS buckets (unidirectional)", "inputs": [{"name": "source_cos_path", "type":
       "String"}, {"name": "source_access_key_id", "type": "String"}, {"name": "source_secret_access_key",
@@ -142,7 +142,7 @@ spec:
       - ''
       - '{{inputs.parameters.buffer_dir}}'
       - "True"
-      - sync_to_local
+      - sync_to_cos
       - INFO
       image: romeokienzler/claimed-util-cos:0.29
       volumeMounts:
@@ -188,7 +188,7 @@ spec:
           "/home/romeokienzler/gitco/component-library/component-library/util/util-cos.yaml"}',
         pipelines.kubeflow.org/arguments.parameters: '{"access_key_id": "{{inputs.parameters.source_access_key_id}}",
           "bucket_name": "{{inputs.parameters.source_bucket_name}}", "endpoint": "{{inputs.parameters.source_endpoint}}",
-          "log_level": "INFO", "operation": "sync_to_local", "path": "{{inputs.parameters.source_cos_path}}",
+          "log_level": "INFO", "operation": "sync_to_cos", "path": "{{inputs.parameters.source_cos_path}}",
           "recursive": "True", "secret_access_key": "{{inputs.parameters.source_secret_access_key}}",
           "source": "", "target": "{{inputs.parameters.buffer_dir}}"}'}
     volumes:
