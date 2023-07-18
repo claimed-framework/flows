@@ -165,8 +165,8 @@ spec:
           - $(inputs.params.target_endpoint)
           - $(inputs.params.target_bucket_name)
           - ''
-          - $(inputs.params.target_local_path)
-          - $(inputs.params.buffer_dir)
+          - $(inputs.params.buffer_dir)$(inputs.params.target_local_path)
+          - ''
           - "True"
           - sync_to_cos
           - INFO

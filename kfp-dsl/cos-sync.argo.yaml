@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
   generateName: cos-sync-
-  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.22, pipelines.kubeflow.org/pipeline_compilation_time: '2023-07-09T21:33:28.023315',
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.22, pipelines.kubeflow.org/pipeline_compilation_time: '2023-07-09T22:12:41.286312',
     pipelines.kubeflow.org/pipeline_spec: '{"description": "syncs two S3 compliant
       COS buckets (unidirectional)", "inputs": [{"name": "source_cos_path", "type":
       "String"}, {"name": "source_access_key_id", "type": "String"}, {"name": "source_secret_access_key",
@@ -144,8 +144,8 @@ spec:
       - '{{inputs.parameters.target_endpoint}}'
       - '{{inputs.parameters.target_bucket_name}}'
       - ''
-      - '{{inputs.parameters.target_local_path}}'
-      - '{{inputs.parameters.buffer_dir}}'
+      - '{{inputs.parameters.buffer_dir}}{{inputs.parameters.target_local_path}}'
+      - ''
       - "True"
       - sync_to_cos
       - INFO
@@ -195,7 +195,8 @@ spec:
           "bucket_name": "{{inputs.parameters.target_bucket_name}}", "endpoint": "{{inputs.parameters.target_endpoint}}",
           "log_level": "INFO", "operation": "sync_to_cos", "path": "", "recursive":
           "True", "secret_access_key": "{{inputs.parameters.target_secret_access_key}}",
-          "source": "{{inputs.parameters.target_local_path}}", "target": "{{inputs.parameters.buffer_dir}}"}'}
+          "source": "{{inputs.parameters.buffer_dir}}{{inputs.parameters.target_local_path}}",
+          "target": ""}'}
     volumes:
     - name: pvolume-e819e39f92a888af338a32082ea85feaa488e4a0aabfacc858d718b
       persistentVolumeClaim: {claimName: '{{inputs.parameters.pvc_name}}'}
